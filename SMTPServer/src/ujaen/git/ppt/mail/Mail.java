@@ -45,7 +45,7 @@ public class Mail implements RFC5322{
 	public Mail(String from,String to,String host,String ip,String mail) {
 		mMail=mail;
 		mSize=mMail.length();
-		mMailfrom=to;
+		mMailfrom=from;
 		mRcptto=to;
 		mHost=host;
 		mIp=ip;
@@ -160,5 +160,13 @@ public class Mail implements RFC5322{
 	public void addHeader(String header, String value) {
 		//TODO Método que añada cabeceras al correo
 		
+	}
+	public void delMail() {
+		this.mMail="";
+		this.mMailfrom="";
+		this.mRcptto="";
+		this.mHost="";
+		this.mSize=mMail.length();
+		this.mIp="";
 	}
 }

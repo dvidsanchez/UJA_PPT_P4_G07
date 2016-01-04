@@ -80,7 +80,7 @@ public class Mailbox extends ArrayList<Mail> {
 			}
 
 		} else
-			mOpenned = true;
+			mOpenned = false;
 
 		return mOpenned;
 	}
