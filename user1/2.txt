@@ -1,0 +1,4 @@
+subject: correo 2
+to: user1
+from: user2
+

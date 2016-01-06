@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 
+
 import ujaen.git.ppt.smtp.RFC5322;
 
 
@@ -60,17 +61,19 @@ public class Mail implements RFC5322{
 	}
 
 	public int getSize() {
-		return mSize;
+		setSize();//Para que actualice el tamaño siempre que se le solitice el valor
+		return this.mSize;
 	}
 
-	public void setSize(int size) {
-		this.mSize = size;
+	public void setSize() {//modificado para establecer el tamaño del correo que ya tiene introducido, en lugar de usar el otro constructor pasandole el mail completo
+		this.mSize = this.mMail.length();
 	}
 	
 	public static String getTop(String message,int lines)
 	{
 		if(message!=null)
 		{
+			
 			int endOfHeader=message.indexOf(CRLF+CRLF);
 			if(endOfHeader>-1)
 			{
@@ -145,7 +148,7 @@ public class Mail implements RFC5322{
 
 	public String getHost() {
 		
-		return this.mHost;
+		return mHost;
 	}
 
 	public String getIp() {
@@ -159,13 +162,14 @@ public class Mail implements RFC5322{
 	
 	public void addHeader(String header, String value) {
 		//TODO Método que añada cabeceras al correo
+			//Las cabeceras las añado en connection.
 		
 	}
 	public void delMail() {
 		this.mMail="";
 		this.mMailfrom="";
 		this.mRcptto="";
-		this.mHost="";
+		//this.mHost="";
 		this.mSize=mMail.length();
 		this.mIp="";
 	}

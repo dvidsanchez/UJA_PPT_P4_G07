@@ -6,6 +6,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.SocketException;
+import java.text.SimpleDateFormat;
+
+import java.util.Date;
+
 
 import ujaen.git.ppt.mail.Mail;
 import ujaen.git.ppt.mail.Mailbox;
@@ -63,7 +67,9 @@ public class Connection implements Runnable, RFC5322 {
 					
 					// Todo análisis del comando recibido
 					SMTPMessage m = new SMTPMessage(inputData);
+					System.out.println(m.getCommand()+m.getCommandId());
 					if(m.getCommand()==null){
+						outputData = RFC5321.getError(RFC5321.E_500_SINTAXERROR)+RFC5321.getErrorMsg(RFC5321.E_500_SINTAXERROR) + SP + inputData + CRLF;
 						//no se corresponde con un comando -> error de sintaxis
 					}else{
 						mEstado=m.getCommandId();
@@ -76,54 +82,84 @@ public class Connection implements Runnable, RFC5322 {
 						switch (mEstado) {
 							case S_HELO:
 								if(auxi<0){
-									outputData = RFC5321.getReply(RFC5321.R_250)+RFC5321.getReplyMsg(RFC5321.R_250) + SP + inputData + CRLF;
-									auxi=1;
+									if(m.getArguments()!=null&&!m.getArguments().trim().isEmpty()){
+										outputData = RFC5321.getReply(RFC5321.R_250)+SP+RFC5321.getReplyMsg(RFC5321.R_250) + SP + inputData + CRLF;
+										men.setHost(m.getArguments());
+										auxi=1;
+									}else{
+										outputData = RFC5321.getError(RFC5321.E_500_SINTAXERROR)+RFC5321.getErrorMsg(RFC5321.E_500_SINTAXERROR) + SP + inputData + CRLF;
+										//helo sin dominio
+									}
+									
 								}else{
-									//Mensaje de error hello donde no corresponde 
+									outputData = RFC5321.getError(RFC5321.E_503_BADSEQUENCE)+SP+RFC5321.getErrorMsg(RFC5321.E_503_BADSEQUENCE) + SP + inputData + CRLF;
+									//helo cuando no procede
 								}
 								break;
 							case S_EHLO:
 								
-									//Mensaje de error ehlo  no soportado
+								outputData = RFC5321.getError(RFC5321.E_502_COMMANDNOTIMP)+SP+RFC5321.getErrorMsg(RFC5321.E_502_COMMANDNOTIMP) + SP + inputData +"EL SERVIDOR NO TIENE/SOPORTA EXTENSIONES" + CRLF;
+								//comando no soportado
 								
 								break;
 								
 							case S_MAIL:
+								
 								if(auxi==1){
-									outputData = RFC5321.getReply(RFC5321.R_250)+RFC5321.getReplyMsg(RFC5321.R_250)+SP+inputData+CRLF;
-									auxi=2;
-									men.setMailfrom(m.getArguments());
+									if(m.getArguments()!=null&&!m.getArguments().trim().isEmpty()){
+										outputData = RFC5321.getReply(RFC5321.R_250)+SP+RFC5321.getReplyMsg(RFC5321.R_250)+SP+inputData+CRLF;
+										auxi=2;
+										men.setMailfrom(m.getArguments());
+									}else{
+										outputData = RFC5321.getError(RFC5321.E_503_BADSEQUENCE)+SP+RFC5321.getErrorMsg(RFC5321.E_503_BADSEQUENCE) + SP + inputData + CRLF;
+										//mail sin origen
+									}
+									
 								}else{
+									outputData = RFC5321.getError(RFC5321.E_503_BADSEQUENCE)+SP+RFC5321.getErrorMsg(RFC5321.E_503_BADSEQUENCE) + SP + inputData + CRLF;
+
 									//Mensaje de error MAIL donde no corresponde 
 								}
 								break;
 								
 							case S_RCPT:
 								if(auxi==2){
-									if(Mailbox.checkRecipient(m.getArguments())){
-										outputData = RFC5321.getReply(RFC5321.R_250)+RFC5321.getReplyMsg(RFC5321.R_250)+SP+inputData+CRLF;
-										//auxi=3;
-										if(aux==0){
-											men.setRcptto(m.getArguments());
+									if(m.getArguments()!=null){
+										System.out.println(m.getArguments());
+										if(Mailbox.checkRecipient(m.getArguments().trim())){
+											outputData = RFC5321.getReply(RFC5321.R_250)+SP+RFC5321.getReplyMsg(RFC5321.R_250)+SP+inputData+CRLF;
+											//auxi=3;
+											if(aux==0){
+												men.setRcptto(m.getArguments().trim());
+											}else{
+												men.addRecipient(m.getArguments().trim());
+											}
+											
+											aux=1;
 										}else{
-											men.addRecipient(m.getArguments());
+											outputData = RFC5321.getError(RFC5321.E_551_USERNOTLOCAL)+SP+RFC5321.getErrorMsg(RFC5321.E_551_USERNOTLOCAL) + SP + inputData + CRLF;
+											//Usuario no encontrado
 										}
-										
-										aux=1;
 									}else{
-										//Mensaje error ususario no encontrado
+										outputData = RFC5321.getError(RFC5321.E_503_BADSEQUENCE)+SP+RFC5321.getErrorMsg(RFC5321.E_503_BADSEQUENCE) + SP + inputData + CRLF;
+										//rcpt sin destinatario
 									}
 									
+									
 								}else{
+									outputData = RFC5321.getError(RFC5321.E_503_BADSEQUENCE)+SP+RFC5321.getErrorMsg(RFC5321.E_503_BADSEQUENCE) + SP + inputData + CRLF;
+
 									//rcpt donde no corresponde
 								}
 								break;
 								
 							case S_DATA:
 								if(auxi==2 && aux==1){
-									outputData = RFC5321.getReply(RFC5321.R_354)+RFC5321.getReplyMsg(RFC5321.R_354)+SP+inputData+CRLF;
+									outputData = RFC5321.getReply(RFC5321.R_354)+SP+RFC5321.getReplyMsg(RFC5321.R_354)+SP+inputData+CRLF;
 
 								}else{
+									outputData = RFC5321.getError(RFC5321.E_503_BADSEQUENCE)+SP+RFC5321.getErrorMsg(RFC5321.E_503_BADSEQUENCE) + SP + inputData + CRLF;
+
 									//no hay receptores añadidos
 								}
 								break;
@@ -137,7 +173,9 @@ public class Connection implements Runnable, RFC5322 {
 								break;
 								
 							case S_QUIT:
-								
+								outputData = RFC5321.getReply(RFC5321.R_221)+SP+RFC5321.getReplyMsg(RFC5321.R_221)+SP+inputData+RFC5321.MSG_BYE+CRLF;
+
+								mFin=true;
 								break;
 							
 						
@@ -148,16 +186,30 @@ public class Connection implements Runnable, RFC5322 {
 					//outputData = RFC5321.getReply(RFC5321.R_220) + SP + inputData + CRLF;
 					output.write(outputData.getBytes());
 					output.flush();
-					if(mEstado==S_DATA){
+					outputData="";
+					if(mEstado==S_DATA&&aux==1){//Desde aqui se reciben lineas para el correo y se van añadiendo hasta que se introduce un punto unicamente
+						
+						
 						inputData=null;
 						do{
 							if(inputData!=null){
+								
 								men.addMailLine(inputData);
 							}
 							inputData = input.readLine();
-							
-						}while(inputData!=ENDMSG);
-						new Mailbox(men);
+							System.out.print(inputData);
+						}while(!inputData.equals(".")&&!inputData.equals(RFC5322.ENDMSG));
+						Date fecha=new Date();
+						String df="Z";
+						SimpleDateFormat sdf=new SimpleDateFormat(df);
+						
+						
+						String finalmessage="Received: from "+men.getHost()+"("+men.getHost()+"["+mSocket.getInetAddress()+"])"+";"+CRLF+"\t"+fecha+sdf.format(fecha)+CRLF;
+						
+						Mailbox a=new Mailbox(men,finalmessage);
+						outputData=a.getresp();
+						output.write(outputData.getBytes());
+						output.flush();
 						inputData=null;
 						outputData="";
 						auxi=1;

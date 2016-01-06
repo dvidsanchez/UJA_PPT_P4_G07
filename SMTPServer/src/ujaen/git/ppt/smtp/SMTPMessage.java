@@ -33,22 +33,32 @@ public class SMTPMessage implements RFC5322 {
 	 * @return true if there were errors
 	 */
 	protected boolean parseCommand(String data) {
-		if(data.indexOf(SP)==4 && data.indexOf(":")<0){
-			String[] commandParts = data.split(SP,1);
+		//System.out.println(data);
+		if(data.indexOf(SP)==4 && data.indexOf(":")<0){//Comando con 4 caracteres sin ":" y que llevan informacion con ellos(HELO)
+			String[] commandParts = data.split(SP,2);
 			checkCommand(commandParts[0]);
-			
+			//System.out.println(commandParts[0]);
 			if(mCommand!=null){
-				this.mArguments=commandParts[1];
+				if(commandParts.length>1){
+					this.mArguments=commandParts[1];
+
+				}
 				return false;
 			}
 		}
 		if (data.indexOf(":") > 0) {
 			String[] commandParts = data.split(":");// Se busca los comandos con
-													// varias palabras MAIL		// FROM:
+			//System.out.println(commandParts[0]+"1");						// varias palabras MAIL		// FROM:
 			checkCommand(commandParts[0]);
 			if(mCommand!=null){
+				if(commandParts.length>1){
 				this.mArguments=commandParts[1];
-
+				}
+				return false;
+			}
+		}else if(data.length()==4){//Resto de comandos
+			checkCommand(data);
+			if(mCommand!=null){
 				return false;
 			}
 		}

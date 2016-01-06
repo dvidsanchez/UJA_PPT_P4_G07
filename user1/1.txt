@@ -1,0 +1,10 @@
+subject: hola
+to: user1
+from: user2
+
+Correo de prueba
+Este es un correo
+de prueba
+prueba
+más pruebas
+

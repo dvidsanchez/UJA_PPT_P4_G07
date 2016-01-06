@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
+import ujaen.git.ppt.smtp.RFC5322;
+
 /**
  * Protocolos de Transporte Grado de Ingeniería Telemática E. P. S. de Linareas
  * Universidad de Jaén
@@ -39,8 +41,13 @@ public class Mailbox extends ArrayList<Mail> {
 	/**
 	 * Identificador de usuario
 	 */
-	protected String mUser = "";
+	protected String mUser ="";
 
+	/**
+	 * Me hace falta para crear respuesta de mensaje enviado
+	 * 
+	 */
+	private String resp="";
 	/**
 	 * Se inicializa el buzón con el nombre del usuario
 	 * 
@@ -56,14 +63,54 @@ public class Mailbox extends ArrayList<Mail> {
 	 * 
 	 * @param user
 	 */
-	public Mailbox(Mail mail) {
-		mUser = mail.getRcptto();
+	public Mailbox(Mail mail, String headers) {//MODIFICADO para aceptar varios receptores
+		String mesid,mesidf=null;
+		if(mail.getRcptto().indexOf(";")>0){
+			String rcps[]=mail.getRcptto().split(";");
+			
+			for(int i=0;i<rcps.length;i++){
+				mesid=System.currentTimeMillis()+"@"+rcps[i];
+				mesidf=mesidf+mesid+RFC5322.CRLF;
+				int endOfHeader=mail.getMail().indexOf(RFC5322.CRLF+RFC5322.CRLF);
+				String finalmessage=null;
+				if(endOfHeader>-1){
+					finalmessage=headers+"Message-ID:"+mesid+RFC5322.CRLF+mail.getMail();//añade cabeceras sin CRLF+CRLF porque habia cabeceras
 
+				}else{
+					finalmessage=headers+"Message-ID:"+mesid+RFC5322.CRLF+RFC5322.CRLF+mail.getMail();//añade cabeceras y CRLF+CRLF porque no habia cabeceras.
+
+				}
+				mail.setMail(finalmessage);
+				mUser = rcps[i];
+
+				this.add(mail);
+				this.newMail(mail.getMail());
+				this.resp=mesidf;
+		}
+		
+		}else{
+		mUser = mail.getRcptto();
+		mesid=System.currentTimeMillis()+"@"+mUser;
+		mesidf=mesid+RFC5322.CRLF;
+		int endOfHeader=mail.getMail().indexOf(RFC5322.CRLF+RFC5322.CRLF);
+		String finalmessage=null;
+		if(endOfHeader>-1){
+			finalmessage=headers+"Message-ID:"+mesid+RFC5322.CRLF+mail.getMail();//añade cabeceras sin CRLF+CRLF porque habia cabeceras
+
+		}else{
+			finalmessage=headers+"Message-ID:"+mesid+RFC5322.CRLF+RFC5322.CRLF+mail.getMail();//añade cabeceras y CRLF+CRLF porque no habia cabeceras.
+
+		}
+		mail.setMail(finalmessage);
 		this.add(mail);
 		this.newMail(mail.getMail());
-
+		this.resp=mesidf;
+		}
+		
 	}
-
+	public String getresp(){
+		return this.resp;
+	}
 	/**
 	 * Comprueba si existe el directorio
 	 * 
@@ -194,8 +241,12 @@ public class Mailbox extends ArrayList<Mail> {
 	 * @return true if the user exists, false otherwise
 	 */
 	public static boolean checkRecipient(String rcpt) {
-
+		
+		
+		
 		File file = new File(rcpt);
+		
+		
 		if (file.exists() && file.isDirectory()) {
 			return true;
 		}
