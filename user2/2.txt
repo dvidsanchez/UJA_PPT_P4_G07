@@ -1,5 +1,6 @@
-purueba
+Received: from dominio.yo.es(dominio.yo.es[/127.0.0.1]);
+	Wed Jan 06 16:27:04 CET 2016+0100
+Message-ID:1452094024988@dominio.yo.es
+Subject:prueba
 
-j
-
-j
+prueba

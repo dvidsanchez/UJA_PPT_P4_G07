@@ -1,6 +1,0 @@
-Received: from pc.domino.(pc.domino.[/127.0.0.1]);
-	Wed Jan 06 14:49:04 CET 2016+0100
-Message-ID:1452088144148@pc.domino.
-
-prueba 
-y prueba

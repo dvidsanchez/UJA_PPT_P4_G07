@@ -67,7 +67,7 @@ public class Connection implements Runnable, RFC5322 {
 					
 					// Todo análisis del comando recibido
 					SMTPMessage m = new SMTPMessage(inputData);
-					System.out.println(m.getCommand()+m.getCommandId());
+					//System.out.println(m.getCommand()+m.getCommandId());
 					if(m.getCommand()==null){
 						outputData = RFC5321.getError(RFC5321.E_500_SINTAXERROR)+RFC5321.getErrorMsg(RFC5321.E_500_SINTAXERROR) + SP + inputData + CRLF;
 						//no se corresponde con un comando -> error de sintaxis
@@ -197,7 +197,7 @@ public class Connection implements Runnable, RFC5322 {
 								men.addMailLine(inputData);
 							}
 							inputData = input.readLine();
-							System.out.print(inputData);
+							
 						}while(!inputData.equals(".")&&!inputData.equals(RFC5322.ENDMSG));
 						Date fecha=new Date();
 						String df="Z";
@@ -207,7 +207,7 @@ public class Connection implements Runnable, RFC5322 {
 						String finalmessage="Received: from "+men.getHost()+"("+men.getHost()+"["+mSocket.getInetAddress()+"])"+";"+CRLF+"\t"+fecha+sdf.format(fecha)+CRLF;
 						
 						Mailbox a=new Mailbox(men,finalmessage);
-						outputData=a.getresp();
+						outputData="Mensaje/s enviado/s\r\n"+a.getresp();
 						output.write(outputData.getBytes());
 						output.flush();
 						inputData=null;

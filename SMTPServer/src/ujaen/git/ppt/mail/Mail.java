@@ -162,7 +162,7 @@ public class Mail implements RFC5322{
 	
 	public void addHeader(String header, String value) {
 		//TODO Método que añada cabeceras al correo
-			//Las cabeceras las añado en connection.
+			//Las cabeceras las añado en connection y en mailbox
 		
 	}
 	public void delMail() {

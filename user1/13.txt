@@ -1,4 +1,0 @@
-Received: from yo[/127.0.0.1];
-		Wed Jan 06 14:28:43 CET 2016+0100
-Message-ID:1452086924065@yo
-prueba xxx

@@ -63,21 +63,22 @@ public class Mailbox extends ArrayList<Mail> {
 	 * 
 	 * @param user
 	 */
-	public Mailbox(Mail mail, String headers) {//MODIFICADO para aceptar varios receptores
-		String mesid,mesidf=null;
+	public Mailbox(Mail mail, String headers) {//MODIFICADO para aceptar varios receptores y para añadir una cabecera de message-id diferente a cada uno de ellos
+		String mesid="",mesidf="",origmes="";
 		if(mail.getRcptto().indexOf(";")>0){
 			String rcps[]=mail.getRcptto().split(";");
-			
+			origmes=mail.getMail();
 			for(int i=0;i<rcps.length;i++){
-				mesid=System.currentTimeMillis()+"@"+rcps[i];
-				mesidf=mesidf+mesid+RFC5322.CRLF;
-				int endOfHeader=mail.getMail().indexOf(RFC5322.CRLF+RFC5322.CRLF);
+				
+				mesid=System.currentTimeMillis()+"@"+mail.getHost();
+				mesidf=mesidf+"Message-ID:"+mesid+RFC5322.CRLF;
+				int endOfHeader=origmes.indexOf(RFC5322.CRLF+RFC5322.CRLF);
 				String finalmessage=null;
 				if(endOfHeader>-1){
-					finalmessage=headers+"Message-ID:"+mesid+RFC5322.CRLF+mail.getMail();//añade cabeceras sin CRLF+CRLF porque habia cabeceras
+					finalmessage=headers+"Message-ID:"+mesid+RFC5322.CRLF+origmes;//añade cabeceras sin CRLF+CRLF porque habia cabeceras
 
 				}else{
-					finalmessage=headers+"Message-ID:"+mesid+RFC5322.CRLF+RFC5322.CRLF+mail.getMail();//añade cabeceras y CRLF+CRLF porque no habia cabeceras.
+					finalmessage=headers+"Message-ID:"+mesid+RFC5322.CRLF+RFC5322.CRLF+origmes;//añade cabeceras y CRLF+CRLF porque no habia cabeceras.
 
 				}
 				mail.setMail(finalmessage);
@@ -90,7 +91,7 @@ public class Mailbox extends ArrayList<Mail> {
 		
 		}else{
 		mUser = mail.getRcptto();
-		mesid=System.currentTimeMillis()+"@"+mUser;
+		mesid=System.currentTimeMillis()+"@"+mail.getHost();
 		mesidf=mesid+RFC5322.CRLF;
 		int endOfHeader=mail.getMail().indexOf(RFC5322.CRLF+RFC5322.CRLF);
 		String finalmessage=null;
@@ -104,7 +105,7 @@ public class Mailbox extends ArrayList<Mail> {
 		mail.setMail(finalmessage);
 		this.add(mail);
 		this.newMail(mail.getMail());
-		this.resp=mesidf;
+		this.resp="Message-ID:"+mesid+RFC5322.CRLF;
 		}
 		
 	}

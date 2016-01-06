@@ -1,3 +1,6 @@
-Received: from yo[/127.0.0.1];Wed Jan 06 02:03:40 CET 20163600000
-Message-ID:1452042220882@yo
-prueba 
+Received: from dominio.yo.es(dominio.yo.es[/127.0.0.1]);
+	Wed Jan 06 16:27:04 CET 2016+0100
+Message-ID:1452094024991@dominio.yo.es
+Subject:prueba
+
+prueba
